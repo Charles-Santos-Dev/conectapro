@@ -1,10 +1,10 @@
 package com.conectapro.conectapro.controller;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,6 +15,7 @@ import com.conectapro.conectapro.PasswordService;
 import com.conectapro.conectapro.DTO.LoginRequestDTO;
 import com.conectapro.conectapro.DTO.ResponseDTO;
 import com.conectapro.conectapro.entity.UserEntity;
+import com.conectapro.conectapro.service.JwtService;
 import com.conectapro.conectapro.service.UserService;
 
 @RestController
@@ -29,38 +30,50 @@ public class LoginController {
 	@Autowired
 	private PasswordService passwordService;
     
+	@Autowired
+	private JwtService jwtService;
+	
 	@PostMapping("/login")
-    public ResponseDTO login(@RequestBody LoginRequestDTO userLogin) {
+    public ResponseEntity<ResponseDTO> login(@RequestBody LoginRequestDTO userDTO) {
     	
-		List<UserEntity> users = this.userService.findAllUsers();
+		ResponseDTO response = new ResponseDTO();
+		HttpStatus status;
 		
-		for(UserEntity user : users) {
+		UserEntity userLogin = this.userService.findByLogin(userDTO.getLogin());
+		
+		if(userLogin == null) {
 			
-			if(this.passwordService.checkPassword(userLogin.getPassword(), user.getPassword())) {
-				System.out.println("Teste - " + user.getLogin());
+	    	response.setMessage("Usuário não existe");
+	    	status = HttpStatus.NOT_FOUND;
+		
+		} else {
+			
+			boolean validateUser = this.passwordService.checkPassword(userDTO.getPassword(), userLogin.getPassword());
+			
+			if(validateUser) {
+		    	response.setJwt(this.jwtService.generateToken(userLogin.getLogin()));
+		    	response.setMessage("OK");
+		    	status = HttpStatus.OK;
+			} else {
+		    	response.setMessage("Senha não confere");
+		    	status = HttpStatus.UNAUTHORIZED;
 			}
-			
-		}
 		
-    	ResponseDTO response = new ResponseDTO();
-    	
-    	response.setCode(0);
-    	response.setMessage("ok");
-    	
-        return response;
+		}
+
+		return new ResponseEntity<>(response, status);
     }
 	
 	@GetMapping("/teste")
-    public ResponseDTO teste() {
+    public ResponseEntity<ResponseDTO> teste() {
     	
-		
     	ResponseDTO response = new ResponseDTO();
+    	HttpStatus status = HttpStatus.OK;
     	
     	logger.debug("Mensagem de Teste...");
     	
-    	response.setCode(100);
     	response.setMessage("Teste...");
     	
-        return response;
+    	return new ResponseEntity<>(response, status);
     }
 }

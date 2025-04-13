@@ -1,24 +1,14 @@
 package com.conectapro.conectapro.DTO;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
-@Getter
-@Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResponseDTO {
 
-	private Integer code;
 	private String message;
+	private String jwt;
 	
 	public ResponseDTO() {}
-
-	public Integer getCode() {
-		return code;
-	}
-
-	public void setCode(Integer code) {
-		this.code = code;
-	}
 
 	public String getMessage() {
 		return message;
@@ -27,5 +17,13 @@ public class ResponseDTO {
 	public void setMessage(String message) {
 		this.message = message;
 	}
-	
+
+	public String getJwt() {
+		return jwt;
+	}
+
+	public void setJwt(String jwt) {
+		this.jwt = jwt;
+	}
+
 }

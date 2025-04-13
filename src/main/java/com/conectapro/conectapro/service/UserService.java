@@ -22,4 +22,12 @@ public class UserService {
 		
 	}
 	
+	public UserEntity findByLogin(String login) {
+		
+		UserEntity userLogin = this.userRepository.findByLogin(login);
+		
+		return userLogin;
+		
+	}
+	
 }
